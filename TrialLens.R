@@ -279,7 +279,7 @@ ui <- fluidPage(
                     padding: 8px 12px; font-family: monospace; font-size: 12px;
                     margin: 6px 0; line-height: 1.6; }
     ")),
-    
+
     tags$script(HTML("
       Shiny.addCustomMessageHandler('setProgDl', function(p) {
         var el = document.getElementById('dl_prog_fill');
@@ -304,299 +304,299 @@ ui <- fluidPage(
       }
     "))
   ),
-  
+
   # ── 顶部标题栏 ────────────────────────────────────────────────────────────
   div(class = "app-header",
-      div(class = "app-logo",
-          tags$span(style = "font-size:34px; line-height:1;", "🔬"),
-          div(
-            div(class = "title-row",
-                h2("TrialLens"),
-                tags$span(class = "ver-badge", "v1.0"),
-                tags$span(class = "cn-title", "临镜")
-            ),
-            p(class = "app-sub",
-              "Batch download & keyword-screen Protocol / SAP from ClinicalTrials.gov",
-              tags$span(style = "margin:0 6px; opacity:0.4;", "|"),
-              "批量下载并关键词筛选临床试验文件")
-          )
+    div(class = "app-logo",
+      tags$span(style = "font-size:34px; line-height:1;", "🔬"),
+      div(
+        div(class = "title-row",
+          h2("TrialLens"),
+          tags$span(class = "ver-badge", "v1.0"),
+          tags$span(class = "cn-title", "临镜")
+        ),
+        p(class = "app-sub",
+          "Batch download & keyword-screen Protocol / SAP from ClinicalTrials.gov",
+          tags$span(style = "margin:0 6px; opacity:0.4;", "|"),
+          "批量下载并关键词筛选临床试验文件")
       )
+    )
   ),
-  
+
   # ── 标签页 ────────────────────────────────────────────────────────────────
   tabsetPanel(id = "tabs", type = "tabs",
-              
-              # ══════════════════════════════════════════════════════
-              #  Tab 1 — Tool
-              # ══════════════════════════════════════════════════════
-              tabPanel("🛠 Tool / 工具",
-                       div(class = "main-card",
-                           fluidRow(
-                             
-                             # ── 左列：输入
-                             column(5,
-                                    div(class = "sec-label", "① Trial List CSV  /  试验列表"),
-                                    fileInput("csv_file", label = NULL, accept = ".csv",
-                                              buttonLabel = "Browse / 选择",
-                                              placeholder = "ClinicalTrials.gov export"),
-                                    uiOutput("csv_hint"),
-                                    
-                                    div(style = "margin-top:16px;", class = "sec-label",
-                                        "② PDF Output Folder  /  输出目录"),
-                                    textInput("pdf_dir", label = NULL,
-                                              placeholder = "e.g.  F:\\test\\output",
-                                              width = "100%"),
-                                    
-                                    div(style = "margin-top:16px;", class = "sec-label",
-                                        "③ Document Type  /  文档类型"),
-                                    div(class = "doc-btn-group",
-                                        tags$button(id = "doc_protocol", class = "doc-btn active",
-                                                    onclick = "setDocType('protocol')", "📄 Protocol"),
-                                        tags$button(id = "doc_sap",      class = "doc-btn",
-                                                    onclick = "setDocType('sap')",      "📊 SAP"),
-                                        tags$button(id = "doc_both",     class = "doc-btn",
-                                                    onclick = "setDocType('both')",     "📋 Both / 两者")
-                                    ),
-                                    tags$input(id = "doc_type", type = "hidden", value = "protocol"),
-                                    
-                                    hr(class = "divider"),
-                                    
-                                    div(class = "sec-label", "Download  /  下载"),
-                                    uiOutput("dl_btn_ui"),
-                                    
-                                    hr(class = "divider"),
-                                    
-                                    div(class = "sec-label", "④ Keyword Search  /  关键词筛选"),
-                                    div(class = "search-section",
-                                        p(style = "font-size:12px;color:#7f8c8d;margin:0 0 10px;",
-                                          "Scans PDFs already in the output folder above  /  扫描上方目录中已下载的 PDF"),
-                                        textInput("keywords", label = NULL,
-                                                  placeholder = "RPSFT, rank preserving  (comma / 逗号分隔)",
-                                                  width = "100%"),
-                                        uiOutput("kw_tags"),
-                                        tags$button("🔍  Search / 开始筛选", class = "btn-search",
-                                                    onclick = "Shiny.setInputValue('search_btn', Math.random())")
-                                    )
-                             ),
-                             
-                             # ── 右列：仪表盘 + 日志
-                             column(7,
-                                    div(style = "display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;",
-                                        div(class = "sec-label", style = "margin:0;", "Download Progress  /  下载进度"),
-                                        uiOutput("dl_status_pill")
-                                    ),
-                                    div(class = "stat-row",
-                                        div(class = "stat-box",
-                                            div(class = "stat-num", textOutput("dl_total", inline = TRUE)),
-                                            div(class = "stat-label", "Total / 总计")
-                                        ),
-                                        div(class = "stat-box green",
-                                            div(class = "stat-num", textOutput("dl_ok", inline = TRUE)),
-                                            div(class = "stat-label", "Downloaded / 已下载")
-                                        ),
-                                        div(class = "stat-box orange",
-                                            div(class = "stat-num", textOutput("dl_skip", inline = TRUE)),
-                                            div(class = "stat-label", "Skipped / 跳过")
-                                        ),
-                                        div(class = "stat-box red",
-                                            div(class = "stat-num", textOutput("dl_fail", inline = TRUE)),
-                                            div(class = "stat-label", "Failed / 失败")
-                                        )
-                                    ),
-                                    div(class = "prog-track", div(id = "dl_prog_fill", class = "prog-fill")),
-                                    div(class = "prog-pct", textOutput("dl_pct", inline = TRUE)),
-                                    div(class = "log-box", id = "dl_log_box", htmlOutput("dl_log")),
-                                    
-                                    hr(class = "divider"),
-                                    
-                                    div(style = "display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;",
-                                        div(class = "sec-label", style = "margin:0;", "Search Results  /  筛选结果"),
-                                        uiOutput("sr_status_pill")
-                                    ),
-                                    div(class = "stat-row",
-                                        div(class = "stat-box",
-                                            div(class = "stat-num", textOutput("sr_total",   inline = TRUE)),
-                                            div(class = "stat-label", "PDFs Found / 总数")
-                                        ),
-                                        div(class = "stat-box green",
-                                            div(class = "stat-num", textOutput("sr_matched", inline = TRUE)),
-                                            div(class = "stat-label", "Matched / 命中")
-                                        ),
-                                        div(class = "stat-box orange",
-                                            div(class = "stat-num", textOutput("sr_no",      inline = TRUE)),
-                                            div(class = "stat-label", "No Match / 未命中")
-                                        ),
-                                        div(class = "stat-box red",
-                                            div(class = "stat-num", textOutput("sr_err",     inline = TRUE)),
-                                            div(class = "stat-label", "Errors / 失败")
-                                        )
-                                    ),
-                                    div(class = "prog-track", div(id = "sr_prog_fill", class = "prog-fill green")),
-                                    div(class = "prog-pct", textOutput("sr_pct", inline = TRUE)),
-                                    div(class = "log-box", id = "sr_log_box", htmlOutput("sr_log"))
-                             )
-                           )
-                       )
+
+    # ══════════════════════════════════════════════════════
+    #  Tab 1 — Tool
+    # ══════════════════════════════════════════════════════
+    tabPanel("🛠 Tool / 工具",
+      div(class = "main-card",
+        fluidRow(
+
+          # ── 左列：输入
+          column(5,
+            div(class = "sec-label", "① Trial List CSV  /  试验列表"),
+            fileInput("csv_file", label = NULL, accept = ".csv",
+                      buttonLabel = "Browse / 选择",
+                      placeholder = "ClinicalTrials.gov export"),
+            uiOutput("csv_hint"),
+
+            div(style = "margin-top:16px;", class = "sec-label",
+                "② PDF Output Folder  /  输出目录"),
+            textInput("pdf_dir", label = NULL,
+                      placeholder = "e.g.  F:\\test\\output",
+                      width = "100%"),
+
+            div(style = "margin-top:16px;", class = "sec-label",
+                "③ Document Type  /  文档类型"),
+            div(class = "doc-btn-group",
+              tags$button(id = "doc_protocol", class = "doc-btn active",
+                          onclick = "setDocType('protocol')", "📄 Protocol"),
+              tags$button(id = "doc_sap",      class = "doc-btn",
+                          onclick = "setDocType('sap')",      "📊 SAP"),
+              tags$button(id = "doc_both",     class = "doc-btn",
+                          onclick = "setDocType('both')",     "📋 Both / 两者")
+            ),
+            tags$input(id = "doc_type", type = "hidden", value = "protocol"),
+
+            hr(class = "divider"),
+
+            div(class = "sec-label", "Download  /  下载"),
+            uiOutput("dl_btn_ui"),
+
+            hr(class = "divider"),
+
+            div(class = "sec-label", "④ Keyword Search  /  关键词筛选"),
+            div(class = "search-section",
+              p(style = "font-size:12px;color:#7f8c8d;margin:0 0 10px;",
+                "Scans PDFs already in the output folder above  /  扫描上方目录中已下载的 PDF"),
+              textInput("keywords", label = NULL,
+                        placeholder = "RPSFT, rank preserving  (comma / 逗号分隔)",
+                        width = "100%"),
+              uiOutput("kw_tags"),
+              tags$button("🔍  Search / 开始筛选", class = "btn-search",
+                          onclick = "Shiny.setInputValue('search_btn', Math.random())")
+            )
+          ),
+
+          # ── 右列：仪表盘 + 日志
+          column(7,
+            div(style = "display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;",
+              div(class = "sec-label", style = "margin:0;", "Download Progress  /  下载进度"),
+              uiOutput("dl_status_pill")
+            ),
+            div(class = "stat-row",
+              div(class = "stat-box",
+                div(class = "stat-num", textOutput("dl_total", inline = TRUE)),
+                div(class = "stat-label", "Total / 总计")
               ),
-              
-              # ══════════════════════════════════════════════════════
-              #  Tab 2 — Guide EN
-              # ══════════════════════════════════════════════════════
-              tabPanel("📖 Guide (EN)",
-                       div(class = "main-card",
-                           div(class = "guide-card",
-                               h4("🔬 What does TrialLens do?"),
-                               p(style = "color:#5d6d7e;font-size:13.5px;line-height:1.8;",
-                                 tags$strong("Download:"), " Given a CSV from ClinicalTrials.gov, batch-downloads Protocol and/or SAP PDFs
-            named by NCT number. You can stop at any time and resume — already-downloaded files are skipped.", tags$br(),
-                                 tags$strong("Search:"), " Scans all PDFs in the same output folder for keywords.
-            Hits go to ", tags$code("matched/"), ", others to ", tags$code("not_matched/"), ".")
-                           ),
-                           div(class = "guide-card",
-                               h4("📋 How to use"),
-                               div(class="guide-step", div(class="guide-step-num","1"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","Export trial list from ClinicalTrials.gov"),
-                                       div(class="guide-step-desc",
-                                           "Go to ", tags$a("clinicaltrials.gov", href="https://clinicaltrials.gov", target="_blank"),
-                                           " → search → ", tags$strong("Download → CSV"),
-                                           ". File must have ", tags$code("NCT Number"), " and ", tags$code("Study Documents"), " columns.")
-                                   )
-                               ),
-                               div(class="guide-step", div(class="guide-step-num","2"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","① Upload CSV, ② set output folder, ③ choose document type"),
-                                       div(class="guide-step-desc",
-                                           tags$strong("Protocol"), " / ", tags$strong("SAP"), " / ", tags$strong("Both"),
-                                           " — choose which document to download per trial.")
-                                   )
-                               ),
-                               div(class="guide-step", div(class="guide-step-num","3"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","Click ▶ Start Download — stop any time with ■ Stop"),
-                                       div(class="guide-step-desc",
-                                           "Dashboard updates live. Stop is safe — already-downloaded files are preserved.
-                Re-running skips files already on disk.")
-                                   )
-                               ),
-                               div(class="guide-step", div(class="guide-step-num","4"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","④ Enter keywords and click 🔍 Search"),
-                                       div(class="guide-step-desc",
-                                           "Searches the same output folder. Comma-separate multiple keywords.
-                A PDF is a hit if ", tags$em("any"), " keyword matches (case-insensitive).")
-                                   )
-                               )
-                           ),
-                           div(class = "guide-card",
-                               h4("📁 Output structure"),
-                               div(class="guide-code",
-                                   "F:/output/", tags$br(),
-                                   "├── NCT01714739.pdf    ← downloaded", tags$br(),
-                                   "├── matched/           ← keyword hits", tags$br(),
-                                   "└── not_matched/       ← no match"
-                               )
-                           ),
-                           div(class = "guide-card",
-                               h4("⚠️ Notes"),
-                               div(class="guide-note",
-                                   tags$strong("Paths:"), " Both ", tags$code("F:\\test"), " and ", tags$code("F:/test"),
-                                   " work — backslashes convert automatically.", tags$br(), tags$br(),
-                                   tags$strong("Case sensitivity:"), " Keyword matching is case-insensitive.",tags$br(), tags$br(),
-                                   tags$strong("Stop & resume:"), " Safe to stop mid-download. Re-run skips existing files.", tags$br(), tags$br(),
-                                   tags$strong("Packages needed:"),
-                                   div(class="guide-code", 'install.packages(c("shiny","pdftools","httr","future","promises"))')
-                               )
-                           )
-                       )
+              div(class = "stat-box green",
+                div(class = "stat-num", textOutput("dl_ok", inline = TRUE)),
+                div(class = "stat-label", "Downloaded / 已下载")
               ),
-              
-              # ══════════════════════════════════════════════════════
-              #  Tab 3 — 使用指南
-              # ══════════════════════════════════════════════════════
-              tabPanel("📖 使用指南",
-                       div(class = "main-card",
-                           div(class = "guide-card",
-                               h4("🔬 临镜 · TrialLens 简介"),
-                               p(style = "color:#5d6d7e;font-size:13.5px;line-height:1.8;",
-                                 tags$strong("下载："), "根据 ClinicalTrials.gov 导出的 CSV，批量下载 Protocol / SAP PDF，以 NCT 编号命名。
-            可随时停止，已下载文件不丢失，重新运行时自动跳过。", tags$br(),
-                                 tags$strong("筛选："), "扫描同一输出目录中的 PDF，命中关键词的文件移入 ",
-                                 tags$code("matched/"), "，未命中的移入 ", tags$code("not_matched/"), "。")
-                           ),
-                           div(class = "guide-card",
-                               h4("📋 操作步骤"),
-                               div(class="guide-step", div(class="guide-step-num","1"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","从 ClinicalTrials.gov 导出试验列表"),
-                                       div(class="guide-step-desc",
-                                           "打开 ", tags$a("clinicaltrials.gov", href="https://clinicaltrials.gov", target="_blank"),
-                                           "，检索后点击 ", tags$strong("Download → CSV"),
-                                           "，确保文件包含 ", tags$code("NCT Number"), " 和 ", tags$code("Study Documents"), " 列。")
-                                   )
-                               ),
-                               div(class="guide-step", div(class="guide-step-num","2"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","① 上传 CSV，② 填写输出目录，③ 选择文档类型"),
-                                       div(class="guide-step-desc",
-                                           tags$strong("Protocol（研究方案）"), " / ",
-                                           tags$strong("SAP（统计分析计划）"), " / ",
-                                           tags$strong("Both（两者）"), " 三选一。")
-                                   )
-                               ),
-                               div(class="guide-step", div(class="guide-step-num","3"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","点击 ▶ 开始下载，随时可点 ■ 停止"),
-                                       div(class="guide-step-desc",
-                                           "右侧仪表盘实时刷新进度。停止后已下载文件完整保留，再次运行会从断点续传。")
-                                   )
-                               ),
-                               div(class="guide-step", div(class="guide-step-num","4"),
-                                   div(class="guide-step-body",
-                                       div(class="guide-step-title","④ 输入关键词，点击 🔍 开始筛选"),
-                                       div(class="guide-step-desc",
-                                           "扫描同一输出目录中的所有 PDF。多个关键词用英文逗号分隔，",
-                                           "任意一个命中即判定为匹配。", tags$strong("关键词匹配不区分大小写。"))
-                                   )
-                               )
-                           ),
-                           div(class = "guide-card",
-                               h4("📁 输出文件夹结构"),
-                               div(class="guide-code",
-                                   "F:/output/", tags$br(),
-                                   "├── NCT01714739.pdf    ← 下载的文件", tags$br(),
-                                   "├── matched/           ← 命中关键词", tags$br(),
-                                   "└── not_matched/       ← 未命中"
-                               )
-                           ),
-                           div(class = "guide-card",
-                               h4("⚠️ 注意事项"),
-                               div(class="guide-note",
-                                   tags$strong("路径格式："), tags$code("F:\\test"), " 和 ", tags$code("F:/test"),
-                                   " 均可，自动转换。", tags$br(), tags$br(),
-                                   tags$strong("大小写："), "关键词匹配不区分大小写，RPSFT / rpsft / Rpsft 效果相同。", tags$br(), tags$br(),
-                                   tags$strong("随时停止："), "安全中断，再次运行从断点续传。", tags$br(), tags$br(),
-                                   tags$strong("所需 R 包："),
-                                   div(class="guide-code", 'install.packages(c("shiny","pdftools","httr","future","promises"))')
-                               )
-                           )
-                       )
+              div(class = "stat-box orange",
+                div(class = "stat-num", textOutput("dl_skip", inline = TRUE)),
+                div(class = "stat-label", "Skipped / 跳过")
+              ),
+              div(class = "stat-box red",
+                div(class = "stat-num", textOutput("dl_fail", inline = TRUE)),
+                div(class = "stat-label", "Failed / 失败")
               )
-              
+            ),
+            div(class = "prog-track", div(id = "dl_prog_fill", class = "prog-fill")),
+            div(class = "prog-pct", textOutput("dl_pct", inline = TRUE)),
+            div(class = "log-box", id = "dl_log_box", htmlOutput("dl_log")),
+
+            hr(class = "divider"),
+
+            div(style = "display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;",
+              div(class = "sec-label", style = "margin:0;", "Search Results  /  筛选结果"),
+              uiOutput("sr_status_pill")
+            ),
+            div(class = "stat-row",
+              div(class = "stat-box",
+                div(class = "stat-num", textOutput("sr_total",   inline = TRUE)),
+                div(class = "stat-label", "PDFs Found / 总数")
+              ),
+              div(class = "stat-box green",
+                div(class = "stat-num", textOutput("sr_matched", inline = TRUE)),
+                div(class = "stat-label", "Matched / 命中")
+              ),
+              div(class = "stat-box orange",
+                div(class = "stat-num", textOutput("sr_no",      inline = TRUE)),
+                div(class = "stat-label", "No Match / 未命中")
+              ),
+              div(class = "stat-box red",
+                div(class = "stat-num", textOutput("sr_err",     inline = TRUE)),
+                div(class = "stat-label", "Errors / 失败")
+              )
+            ),
+            div(class = "prog-track", div(id = "sr_prog_fill", class = "prog-fill green")),
+            div(class = "prog-pct", textOutput("sr_pct", inline = TRUE)),
+            div(class = "log-box", id = "sr_log_box", htmlOutput("sr_log"))
+          )
+        )
+      )
+    ),
+
+    # ══════════════════════════════════════════════════════
+    #  Tab 2 — Guide EN
+    # ══════════════════════════════════════════════════════
+    tabPanel("📖 Guide (EN)",
+      div(class = "main-card",
+        div(class = "guide-card",
+          h4("🔬 What does TrialLens do?"),
+          p(style = "color:#5d6d7e;font-size:13.5px;line-height:1.8;",
+            tags$strong("Download:"), " Given a CSV from ClinicalTrials.gov, batch-downloads Protocol and/or SAP PDFs
+            named by NCT number. You can stop at any time and resume — already-downloaded files are skipped.", tags$br(),
+            tags$strong("Search:"), " Scans all PDFs in the same output folder for keywords.
+            Hits go to ", tags$code("matched/"), ", others to ", tags$code("not_matched/"), ".")
+        ),
+        div(class = "guide-card",
+          h4("📋 How to use"),
+          div(class="guide-step", div(class="guide-step-num","1"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","Export trial list from ClinicalTrials.gov"),
+              div(class="guide-step-desc",
+                "Go to ", tags$a("clinicaltrials.gov", href="https://clinicaltrials.gov", target="_blank"),
+                " → search → ", tags$strong("Download → CSV"),
+                ". File must have ", tags$code("NCT Number"), " and ", tags$code("Study Documents"), " columns.")
+            )
+          ),
+          div(class="guide-step", div(class="guide-step-num","2"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","① Upload CSV, ② set output folder, ③ choose document type"),
+              div(class="guide-step-desc",
+                tags$strong("Protocol"), " / ", tags$strong("SAP"), " / ", tags$strong("Both"),
+                " — choose which document to download per trial.")
+            )
+          ),
+          div(class="guide-step", div(class="guide-step-num","3"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","Click ▶ Start Download — stop any time with ■ Stop"),
+              div(class="guide-step-desc",
+                "Dashboard updates live. Stop is safe — already-downloaded files are preserved.
+                Re-running skips files already on disk.")
+            )
+          ),
+          div(class="guide-step", div(class="guide-step-num","4"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","④ Enter keywords and click 🔍 Search"),
+              div(class="guide-step-desc",
+                "Searches the same output folder. Comma-separate multiple keywords.
+                A PDF is a hit if ", tags$em("any"), " keyword matches (case-insensitive).")
+            )
+          )
+        ),
+        div(class = "guide-card",
+          h4("📁 Output structure"),
+          div(class="guide-code",
+            "F:/output/", tags$br(),
+            "├── NCT01714739.pdf    ← downloaded", tags$br(),
+            "├── matched/           ← keyword hits", tags$br(),
+            "└── not_matched/       ← no match"
+          )
+        ),
+        div(class = "guide-card",
+          h4("⚠️ Notes"),
+          div(class="guide-note",
+            tags$strong("Paths:"), " Both ", tags$code("F:\\test"), " and ", tags$code("F:/test"),
+            " work — backslashes convert automatically.", tags$br(), tags$br(),
+            tags$strong("Case sensitivity:"), " Keyword matching is case-insensitive.",tags$br(), tags$br(),
+            tags$strong("Stop & resume:"), " Safe to stop mid-download. Re-run skips existing files.", tags$br(), tags$br(),
+            tags$strong("Packages needed:"),
+            div(class="guide-code", 'install.packages(c("shiny","pdftools","httr","future","promises"))')
+          )
+        )
+      )
+    ),
+
+    # ══════════════════════════════════════════════════════
+    #  Tab 3 — 使用指南
+    # ══════════════════════════════════════════════════════
+    tabPanel("📖 使用指南",
+      div(class = "main-card",
+        div(class = "guide-card",
+          h4("🔬 临镜 · TrialLens 简介"),
+          p(style = "color:#5d6d7e;font-size:13.5px;line-height:1.8;",
+            tags$strong("下载："), "根据 ClinicalTrials.gov 导出的 CSV，批量下载 Protocol / SAP PDF，以 NCT 编号命名。
+            可随时停止，已下载文件不丢失，重新运行时自动跳过。", tags$br(),
+            tags$strong("筛选："), "扫描同一输出目录中的 PDF，命中关键词的文件移入 ",
+            tags$code("matched/"), "，未命中的移入 ", tags$code("not_matched/"), "。")
+        ),
+        div(class = "guide-card",
+          h4("📋 操作步骤"),
+          div(class="guide-step", div(class="guide-step-num","1"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","从 ClinicalTrials.gov 导出试验列表"),
+              div(class="guide-step-desc",
+                "打开 ", tags$a("clinicaltrials.gov", href="https://clinicaltrials.gov", target="_blank"),
+                "，检索后点击 ", tags$strong("Download → CSV"),
+                "，确保文件包含 ", tags$code("NCT Number"), " 和 ", tags$code("Study Documents"), " 列。")
+            )
+          ),
+          div(class="guide-step", div(class="guide-step-num","2"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","① 上传 CSV，② 填写输出目录，③ 选择文档类型"),
+              div(class="guide-step-desc",
+                tags$strong("Protocol（研究方案）"), " / ",
+                tags$strong("SAP（统计分析计划）"), " / ",
+                tags$strong("Both（两者）"), " 三选一。")
+            )
+          ),
+          div(class="guide-step", div(class="guide-step-num","3"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","点击 ▶ 开始下载，随时可点 ■ 停止"),
+              div(class="guide-step-desc",
+                "右侧仪表盘实时刷新进度。停止后已下载文件完整保留，再次运行会从断点续传。")
+            )
+          ),
+          div(class="guide-step", div(class="guide-step-num","4"),
+            div(class="guide-step-body",
+              div(class="guide-step-title","④ 输入关键词，点击 🔍 开始筛选"),
+              div(class="guide-step-desc",
+                "扫描同一输出目录中的所有 PDF。多个关键词用英文逗号分隔，",
+                "任意一个命中即判定为匹配。", tags$strong("关键词匹配不区分大小写。"))
+            )
+          )
+        ),
+        div(class = "guide-card",
+          h4("📁 输出文件夹结构"),
+          div(class="guide-code",
+            "F:/output/", tags$br(),
+            "├── NCT01714739.pdf    ← 下载的文件", tags$br(),
+            "├── matched/           ← 命中关键词", tags$br(),
+            "└── not_matched/       ← 未命中"
+          )
+        ),
+        div(class = "guide-card",
+          h4("⚠️ 注意事项"),
+          div(class="guide-note",
+            tags$strong("路径格式："), tags$code("F:\\test"), " 和 ", tags$code("F:/test"),
+            " 均可，自动转换。", tags$br(), tags$br(),
+            tags$strong("大小写："), "关键词匹配不区分大小写，RPSFT / rpsft / Rpsft 效果相同。", tags$br(), tags$br(),
+            tags$strong("随时停止："), "安全中断，再次运行从断点续传。", tags$br(), tags$br(),
+            tags$strong("所需 R 包："),
+            div(class="guide-code", 'install.packages(c("shiny","pdftools","httr","future","promises"))')
+          )
+        )
+      )
+    )
+
   ),  # end tabsetPanel
-  
+
   # ── 脚注 ──────────────────────────────────────────────────────────────────
   div(class = "app-footer",
-      div(
-        tags$span(class = "footer-copy", "TrialLens  临镜  v1.0"),
-        tags$span(style = "margin:0 10px; opacity:0.3;", "·"),
-        tags$span("© ", format(Sys.Date(), "%Y"), " Dr Zhang. All rights reserved.")
-      ),
-      div(
-        tags$span("Built with "),
-        tags$a("R Shiny", href = "https://shiny.posit.co", target = "_blank"),
-        tags$span("  |  For research use only  |  仅供学术研究使用")
-      )
+    div(
+      tags$span(class = "footer-copy", "TrialLens  临镜  v1.0"),
+      tags$span(style = "margin:0 10px; opacity:0.3;", "·"),
+      tags$span("© ", format(Sys.Date(), "%Y"), " Dr Zhang. All rights reserved.")
+    ),
+    div(
+      tags$span("Built with "),
+      tags$a("R Shiny", href = "https://shiny.posit.co", target = "_blank"),
+      tags$span("  |  For research use only  |  仅供学术研究使用")
+    )
   )
 )
 
@@ -606,28 +606,28 @@ ui <- fluidPage(
 # ══════════════════════════════════════════════════════════════════════════════
 
 server <- function(input, output, session) {
-  
+
   tmp       <- tempdir()
   log_file  <- file.path(tmp, "dl_log.txt")
   stat_file <- file.path(tmp, "dl_stat.txt")
   stop_flag <- file.path(tmp, "dl_stop")
-  
+
   dl_state <- reactiveValues(status = "idle", total = 0)
   sr_state <- reactiveValues(status = "idle", log = "",
-                             total = 0, matched = 0, no = 0, err = 0)
-  
+                              total = 0, matched = 0, no = 0, err = 0)
+
   # ── CSV ───────────────────────────────────────────────────────────────────
   csv_data <- reactive({
     req(input$csv_file)
     read_csv_auto(input$csv_file$datapath)
   })
-  
+
   output$csv_hint <- renderUI({
     df <- tryCatch(csv_data(), error = function(e) NULL)
     if (is.null(df)) return(NULL)
     div(class = "hint-ok", sprintf("✓  %d trials loaded / 已读取 %d 条", nrow(df), nrow(df)))
   })
-  
+
   # ── 关键词标签 ────────────────────────────────────────────────────────────
   output$kw_tags <- renderUI({
     req(input$keywords)
@@ -637,7 +637,7 @@ server <- function(input, output, session) {
     div(style = "margin-top:7px;",
         tagList(lapply(kws, function(k) span(class = "kw-tag", k))))
   })
-  
+
   # ── 下载按钮 ─────────────────────────────────────────────────────────────
   output$dl_btn_ui <- renderUI({
     if (dl_state$status == "running") {
@@ -648,24 +648,24 @@ server <- function(input, output, session) {
                   onclick = "Shiny.setInputValue('start_btn', Math.random())")
     }
   })
-  
+
   # ── 状态徽章 ─────────────────────────────────────────────────────────────
   output$dl_status_pill <- renderUI({
     switch(dl_state$status,
-           idle    = div(class = "status-pill pill-idle",    "● Idle"),
-           running = div(class = "status-pill pill-running", span(class="blink","●"), " Downloading…"),
-           done    = div(class = "status-pill pill-done",    "✓ Done"),
-           stopped = div(class = "status-pill pill-stopped", "■ Stopped")
+      idle    = div(class = "status-pill pill-idle",    "● Idle"),
+      running = div(class = "status-pill pill-running", span(class="blink","●"), " Downloading…"),
+      done    = div(class = "status-pill pill-done",    "✓ Done"),
+      stopped = div(class = "status-pill pill-stopped", "■ Stopped")
     )
   })
   output$sr_status_pill <- renderUI({
     switch(sr_state$status,
-           idle    = div(class = "status-pill pill-idle",    "● Idle"),
-           running = div(class = "status-pill pill-running", span(class="blink","●"), " Searching…"),
-           done    = div(class = "status-pill pill-done",    "✓ Done")
+      idle    = div(class = "status-pill pill-idle",    "● Idle"),
+      running = div(class = "status-pill pill-running", span(class="blink","●"), " Searching…"),
+      done    = div(class = "status-pill pill-done",    "✓ Done")
     )
   })
-  
+
   # ── 定时轮询 ─────────────────────────────────────────────────────────────
   poll_timer    <- reactiveTimer(800)
   dl_log_content <- reactiveVal("")
@@ -673,7 +673,7 @@ server <- function(input, output, session) {
   dl_skip_val   <- reactiveVal(0)
   dl_fail_val   <- reactiveVal(0)
   dl_done_val   <- reactiveVal(0)
-  
+
   observe({
     poll_timer()
     if (dl_state$status != "running") return()
@@ -681,9 +681,9 @@ server <- function(input, output, session) {
       lines <- readLines(log_file, warn = FALSE, encoding = "UTF-8")
       html  <- paste(sapply(lines, function(l) {
         cls <- if (grepl("^✗|failed|error", l, ignore.case=TRUE)) "log-error"
-        else if (grepl("^⚠|warn|stop", l, ignore.case=TRUE)) "log-warn"
-        else if (grepl("^▶|^✅", l)) "log-head"
-        else ""
+               else if (grepl("^⚠|warn|stop", l, ignore.case=TRUE)) "log-warn"
+               else if (grepl("^▶|^✅", l)) "log-head"
+               else ""
         if (cls != "") sprintf('<span class="%s">%s</span>', cls, l) else l
       }), collapse="\n")
       dl_log_content(html)
@@ -707,26 +707,26 @@ server <- function(input, output, session) {
       }
     }
   })
-  
+
   observeEvent(dl_state$status, {
     if (dl_state$status %in% c("done", "stopped") && file.exists(log_file)) {
       lines <- readLines(log_file, warn = FALSE, encoding = "UTF-8")
       html  <- paste(sapply(lines, function(l) {
         cls <- if (grepl("^✗", l)) "log-error"
-        else if (grepl("^⚠|■", l)) "log-warn"
-        else if (grepl("^▶|^✅", l)) "log-head"
-        else ""
+               else if (grepl("^⚠|■", l)) "log-warn"
+               else if (grepl("^▶|^✅", l)) "log-head"
+               else ""
         if (cls != "") sprintf('<span class="%s">%s</span>', cls, l) else l
       }), collapse="\n")
       dl_log_content(html)
       session$sendCustomMessage("setProgDl",
-                                if (dl_state$total > 0)
-                                  round((dl_ok_val()+dl_skip_val()+dl_fail_val()) / dl_state$total * 100)
-                                else 100)
+        if (dl_state$total > 0)
+          round((dl_ok_val()+dl_skip_val()+dl_fail_val()) / dl_state$total * 100)
+        else 100)
       session$sendCustomMessage("scrollLog", "dl_log_box")
     }
   })
-  
+
   output$dl_log   <- renderUI({ HTML(dl_log_content()) })
   output$dl_total <- renderText(dl_state$total)
   output$dl_ok    <- renderText(dl_ok_val())
@@ -737,14 +737,14 @@ server <- function(input, output, session) {
     done <- dl_ok_val() + dl_skip_val() + dl_fail_val()
     sprintf("%d / %d  (%.0f%%)", done, dl_state$total, done/dl_state$total*100)
   })
-  
+
   # ── 开始下载 ─────────────────────────────────────────────────────────────
   observeEvent(input$start_btn, {
     if (dl_state$status == "running") return()
     pdf_dir  <- fix_path(input$pdf_dir)
     doc_type <- isolate(input$doc_type)
     if (is.null(doc_type) || doc_type == "") doc_type <- "protocol"
-    
+
     errs <- character(0)
     if (is.null(input$csv_file)) errs <- c(errs, "Please upload a CSV file")
     if (pdf_dir == "")           errs <- c(errs, "Please enter the output folder path")
@@ -753,7 +753,7 @@ server <- function(input, output, session) {
         sprintf('<span class="log-error">❌ %s</span>', e)), collapse="\n"))
       return()
     }
-    
+
     df <- tryCatch(csv_data(), error = function(e) NULL)
     if (is.null(df)) {
       dl_log_content('<span class="log-error">❌ Failed to read CSV</span>'); return()
@@ -764,18 +764,18 @@ server <- function(input, output, session) {
       dl_log_content('<span class="log-error">❌ CSV missing NCT Number or Study Documents column</span>')
       return()
     }
-    
+
     if (file.exists(log_file))  file.remove(log_file)
     if (file.exists(stat_file)) file.remove(stat_file)
     if (file.exists(stop_flag)) file.remove(stop_flag)
     dir.create(pdf_dir, recursive=TRUE, showWarnings=FALSE)
-    
+
     dl_state$status <- "running"
     dl_state$total  <- nrow(df)
     dl_ok_val(0); dl_skip_val(0); dl_fail_val(0); dl_done_val(0)
     dl_log_content("")
     session$sendCustomMessage("setProgDl", 0)
-    
+
     future_promise({
       run_download(df, nct_col, doc_col, doc_type, pdf_dir, log_file, stat_file, stop_flag)
     },
@@ -796,50 +796,53 @@ server <- function(input, output, session) {
       cat(paste0("Download error: ", e$message, "\n"), file = log_file, append = TRUE)
       writeLines(as.character(c("0","0","0","stopped")), stat_file)
     })
-    
+
     NULL
   })
-  
+
   # ── 停止下载 ─────────────────────────────────────────────────────────────
   observeEvent(input$stop_btn, {
     if (dl_state$status == "running") file.create(stop_flag)
   })
-  
+
   # ── 搜索 ─────────────────────────────────────────────────────────────────
   observeEvent(input$search_btn, {
     pdf_dir <- fix_path(input$pdf_dir)
     kws     <- trimws(strsplit(input$keywords, ",")[[1]])
     kws     <- kws[nchar(kws) > 0]
-    
+
     add_sr_log <- function(msg, type = "ok") {
       cls  <- switch(type, ok="", warn="log-warn", error="log-error", head="log-head", "")
       line <- if (cls != "") sprintf('<span class="%s">%s</span>', cls, msg) else msg
       sr_state$log <- paste0(sr_state$log, line, "\n")
       session$sendCustomMessage("scrollLog", "sr_log_box")
     }
-    
+
     if (pdf_dir == "") { add_sr_log("❌ Please enter the output folder path", "error"); return() }
     if (!length(kws))  { add_sr_log("❌ Please enter at least one keyword",   "error"); return() }
-    
+
     pdf_files <- list.files(pdf_dir, pattern="\\.pdf$", full.names=TRUE)
     if (!length(pdf_files)) { add_sr_log("❌ No PDF files found in folder", "error"); return() }
-    
+
     sr_state$status  <- "running"
     sr_state$log     <- ""
     sr_state$total   <- length(pdf_files)
     sr_state$matched <- 0; sr_state$no <- 0; sr_state$err <- 0
     session$sendCustomMessage("setProgSr", 0)
-    
+
     add_sr_log(sprintf("🔍 Searching %d PDFs — Keywords: %s",
                        length(pdf_files), paste(kws, collapse=", ")), "head")
-    
+
     matched_dir     <- file.path(pdf_dir, "matched")
     not_matched_dir <- file.path(pdf_dir, "not_matched")
-    dir.create(matched_dir,     recursive=TRUE, showWarnings=FALSE)
     dir.create(not_matched_dir, recursive=TRUE, showWarnings=FALSE)
-    
-    kw_lower <- tolower(kws)
-    
+
+    # 为每个关键词预建子文件夹，清理文件夹名中的非法字符
+    kw_lower   <- tolower(kws)
+    safe_names <- gsub('[\\/:*?"<>|]', "_", kws)
+    kw_dirs    <- file.path(matched_dir, safe_names)
+    for (d in kw_dirs) dir.create(d, recursive=TRUE, showWarnings=FALSE)
+
     for (pdf_file in pdf_files) {
       fname   <- basename(pdf_file)
       content <- tryCatch(
@@ -847,32 +850,42 @@ server <- function(input, output, session) {
         error = function(e) NA_character_
       )
       if (is.na(content)) {
-        add_sr_log(sprintf("✗ Cannot read: %s", fname), "error")
+        add_sr_log(sprintf("\u2717 Cannot read: %s", fname), "error")
         sr_state$err <- sr_state$err + 1
       } else {
-        hit  <- any(sapply(kw_lower, grepl, x=content, fixed=TRUE))
-        dest <- file.path(if (hit) matched_dir else not_matched_dir, fname)
-        tryCatch({
-          if (!file.rename(pdf_file, dest)) {
-            file.copy(pdf_file, dest, overwrite=TRUE); file.remove(pdf_file)
-          }
-        }, error = function(e) NULL)
-        if (hit) {
-          sr_state$matched <- sr_state$matched + 1
-          add_sr_log(sprintf("✓ HIT → %s", fname))
-        } else {
+        hits <- which(sapply(kw_lower, grepl, x=content, fixed=TRUE))
+
+        if (length(hits) == 0) {
+          # 未命中 → 移入 not_matched
+          dest <- file.path(not_matched_dir, fname)
+          tryCatch({
+            if (!file.rename(pdf_file, dest)) {
+              file.copy(pdf_file, dest, overwrite=TRUE); file.remove(pdf_file)
+            }
+          }, error = function(e) NULL)
           sr_state$no <- sr_state$no + 1
+
+        } else {
+          # 命中 → 只移入第一个匹配的关键词子文件夹
+          first_idx <- hits[1]
+          dest <- file.path(kw_dirs[first_idx], fname)
+          tryCatch({
+            if (!file.rename(pdf_file, dest)) {
+              file.copy(pdf_file, dest, overwrite=TRUE); file.remove(pdf_file)
+            }
+          }, error = function(e) NULL)
+          sr_state$matched <- sr_state$matched + 1
+          add_sr_log(sprintf("\u2713 HIT \u2192 %s  [%s]", fname, kws[first_idx]))
         }
       }
       done <- sr_state$matched + sr_state$no + sr_state$err
       session$sendCustomMessage("setProgSr", round(done / sr_state$total * 100))
     }
-    
     add_sr_log(sprintf("✅ Done — Matched: %d  No match: %d  Errors: %d",
                        sr_state$matched, sr_state$no, sr_state$err), "head")
     sr_state$status <- "done"
   })
-  
+
   output$sr_log     <- renderUI({ HTML(sr_state$log) })
   output$sr_total   <- renderText(sr_state$total)
   output$sr_matched <- renderText(sr_state$matched)
