@@ -13,7 +13,7 @@ Given a trial list exported from ClinicalTrials.gov as a CSV file, TrialLens can
 
 - **Batch-download** Protocol and/or Statistical Analysis Plan (SAP) PDFs for hundreds or thousands of trials
 - **Stop and resume** at any time — already-downloaded files are automatically skipped on re-run
-- **Keyword-screen** downloaded PDFs and sort them into `matched/` and `not_matched/` folders
+- **Keyword-screen** downloaded PDFs and sort them into per-keyword subfolders under `matched/`
 - Display **real-time progress** with a live dashboard (counts, progress bar, live log)
 
 ---
@@ -86,9 +86,10 @@ Click **■ Stop** at any point to interrupt — progress is fully preserved. Re
 
 Enter one or more keywords (comma-separated) in the **④ Keyword Search** section and click **🔍 Search**.
 
-- Matching is **case-insensitive**
-- A PDF is counted as a hit if **any** keyword is found
-- Matched files are moved to `matched/`, non-matched to `not_matched/` inside the output folder
+- Matching is **case-insensitive** — `RPSFT`, `rpsft`, and `Rpsft` are treated identically
+- A PDF is a hit if **any** keyword is found anywhere in the document
+- Each matched PDF is moved into `matched/<keyword>/`, where `<keyword>` is the **first** keyword it matches (priority follows the order you entered)
+- Non-matched PDFs are moved to `not_matched/`
 
 ---
 
@@ -96,12 +97,16 @@ Enter one or more keywords (comma-separated) in the **④ Keyword Search** secti
 
 ```
 PDF Output Folder/
-├── NCT01714739.pdf        ← downloaded PDFs (named by NCT number)
+├── NCT01714739.pdf          ← downloaded PDFs (named by NCT number)
 ├── NCT01234567.pdf
-├── matched/               ← PDFs containing at least one keyword
-│   └── NCT01714739.pdf
-└── not_matched/           ← PDFs with no keyword match
-    └── NCT01234567.pdf
+├── matched/
+│   ├── RPSFT/               ← PDFs where "RPSFT" was the first keyword matched
+│   │   ├── NCT01714739.pdf
+│   │   └── NCT02234567.pdf
+│   └── rank preserving/     ← PDFs where "rank preserving" was the first keyword matched
+│       └── NCT03456789.pdf
+└── not_matched/             ← PDFs with no keyword match
+    └── NCT09999999.pdf
 ```
 
 When `Both` is selected, files are named `NCTxxxxxxxx_protocol.pdf` and `NCTxxxxxxxx_sap.pdf`.
@@ -111,6 +116,7 @@ When `Both` is selected, files are named `NCTxxxxxxxx_protocol.pdf` and `NCTxxxx
 ## Notes
 
 - **Path format**: Both `F:\test\output` and `F:/test/output` are accepted — backslashes are converted automatically.
+- **Keyword priority**: If a PDF matches more than one keyword, it is filed under the first matching keyword in the order you entered. Arrange your keywords accordingly.
 - **Encrypted PDFs**: Some PDFs on ClinicalTrials.gov are password-protected and cannot be read for keyword matching. These are reported as errors in the log and do not affect other files.
 - **Local use only**: TrialLens reads and writes to your local filesystem. It is designed to be run locally via `shiny::runApp()`, not deployed to a remote server.
 
